@@ -7,7 +7,7 @@
 #
 import chess_engine
 import pygame as py
-
+import log_util as lg
 import ai_engine
 from enums import Player
 
@@ -18,6 +18,7 @@ SQ_SIZE = HEIGHT // DIMENSION  # the size of each of the squares in the board
 MAX_FPS = 15  # FPS for animations
 IMAGES = {}  # images for the chess pieces
 colors = [py.Color("white"), py.Color("gray")]
+
 
 # TODO: AI black has been worked on. Mirror progress for other two modes
 def load_images():
@@ -108,6 +109,7 @@ def main():
         except ValueError:
             print("Enter 1 or 2.")
 
+    endgame = None  # result of game , 0 = Black win, 1 = White win , 2 = draw
     py.init()
     screen = py.display.set_mode((WIDTH, HEIGHT))
     clock = py.time.Clock()
@@ -119,8 +121,14 @@ def main():
     valid_moves = []
     game_over = False
 
+    check_nums = 0
     ai = ai_engine.chess_ai()
     game_state = chess_engine.game_state()
+
+    lg.initialize_loggers()
+    board_str = lg.draw_board_for_log(game_state.board)
+    lg.start_game_procedure(board_str,human_player)
+
     if human_player is 'b':
         ai_move = ai.minimax_black(game_state, 3, -100000, 100000, True, Player.PLAYER_1)
         game_state.move_piece(ai_move[0], ai_move[1], True)
@@ -149,6 +157,11 @@ def main():
                         else:
                             game_state.move_piece((player_clicks[0][0], player_clicks[0][1]),
                                                   (player_clicks[1][0], player_clicks[1][1]), False)
+                            board_str = lg.draw_board_for_log(game_state.board)
+                            lg.log_board_state(board_str)
+                            lg.check_full_pieces(board_str)
+                            if game_state.move_log[len(game_state.move_log)-1].moving_piece.get_name()=="n":
+                                lg.add_knight_move()
                             square_selected = ()
                             player_clicks = []
                             valid_moves = []
@@ -156,9 +169,19 @@ def main():
                             if human_player is 'w':
                                 ai_move = ai.minimax_white(game_state, 3, -100000, 100000, True, Player.PLAYER_2)
                                 game_state.move_piece(ai_move[0], ai_move[1], True)
+                                if game_state.move_log[len(game_state.move_log) - 1].moving_piece.get_name() == "n":
+                                    lg.add_knight_move()
+                                board_str = lg.draw_board_for_log(game_state.board)
+                                lg.log_board_state(board_str)
+                                lg.check_full_pieces(board_str)
                             elif human_player is 'b':
                                 ai_move = ai.minimax_black(game_state, 3, -100000, 100000, True, Player.PLAYER_1)
                                 game_state.move_piece(ai_move[0], ai_move[1], True)
+                                if game_state.move_log[len(game_state.move_log) - 1].moving_piece.get_name() == "n":
+                                    lg.add_knight_move()
+                                board_str = lg.draw_board_for_log(game_state.board)
+                                lg.log_board_state(board_str)
+                                lg.check_full_pieces(board_str)
                     else:
                         valid_moves = game_state.get_valid_moves((row, col))
                         if valid_moves is None:
@@ -191,6 +214,7 @@ def main():
         clock.tick(MAX_FPS)
         py.display.flip()
 
+    lg.end_game_procedure(endgame)
     # elif human_player is 'w':
     #     ai = ai_engine.chess_ai()
     #     game_state = chess_engine.game_state()
