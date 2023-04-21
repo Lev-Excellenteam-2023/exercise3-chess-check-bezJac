@@ -121,6 +121,7 @@ def main():
     valid_moves = []
     game_over = False
 
+    check_nums = 0
     ai = ai_engine.chess_ai()
     game_state = chess_engine.game_state()
 
