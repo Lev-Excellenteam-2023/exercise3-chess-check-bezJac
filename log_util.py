@@ -64,7 +64,7 @@ def end_game_procedure(endgame: int) -> None:
     game_stats_logger.debug('Total moves made ny Knights in the game: {}'.format(total_knight_moves))
     game_stats_logger.debug('Total checks in the game: {}'.format(total_checks))
     board_states_logger.debug("GAME ENDED\n" + "=" * 80)
-    game_stats_logger.info("GAME ENDED\n" + "=" * 80)
+    game_stats_logger.debug("GAME ENDED\n" + "=" * 80)
 
 
 def log_board_state(board: str) -> None:
