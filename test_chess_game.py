@@ -92,4 +92,13 @@ def test_integration_get_valid_piece_moves(mock_game_state_empty):
     gs.board[2][6] = Piece.Pawn("black_p", 1, 3, Player.PLAYER_2)
     gs.board[4][2] = Piece.Pawn("white_p", 1, 3, Player.PLAYER_1)
     moves = knight.get_valid_piece_moves(gs)
-    assert moves == [(1, 5), (2, 2), (4, 6), (5, 5), (5, 3), (1, 3), (2, 6) ]
+    assert moves == [(1, 5), (2, 2), (4, 6), (5, 5), (5, 3), (1, 3), (2, 6)]
+
+
+def test_system_stupid_mat():
+    gs = game_state()
+    gs.move_piece((1, 2), (2, 2), False)
+    gs.move_piece((6, 3), (4, 3), False)
+    gs.move_piece((1, 1), (3, 1), False)
+    gs.move_piece((7, 4), (3, 0), False)
+    assert gs.checkmate_stalemate_checker() == 0
