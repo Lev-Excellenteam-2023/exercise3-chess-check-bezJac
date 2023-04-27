@@ -16,15 +16,13 @@ def mock_game_state_empty():
     def get_piece(row, col):
         return mock_gs.board[row][col]
 
+    def is_valid_piece(row,col):
+        evaluated_piece = get_piece(row, col)
+        return (evaluated_piece is not None) and (evaluated_piece != Player.EMPTY)
+
+    mock_gs.is_valid_piece.side_effect = is_valid_piece
     mock_gs.get_piece.side_effect = get_piece
     return mock_gs
-
-
-@pytest.fixture
-def mock_game_state_half(mock_game_state_empty):
-    mock_game_state_empty.board[1][3] = Piece.Queen("black_q", 1, 3, Player.PLAYER_2)
-    mock_game_state_empty.board[4][2] = Piece.Rook("white_r", 4, 2, Player.PLAYER_1)
-    return mock_game_state_empty
 
 
 @pytest.fixture
@@ -34,6 +32,7 @@ def mock_game_state_full(mock_game_state_empty):
     return mock_game_state_empty
 
 
+# board is empty - all 8 legal moves should be returned
 def test_get_valid_peaceful_moves_all_moves(mock_game_state_empty):
     knight = mock_game_state_empty.board[3][4]
     moves = knight.get_valid_peaceful_moves(mock_game_state_empty)
@@ -41,17 +40,46 @@ def test_get_valid_peaceful_moves_all_moves(mock_game_state_empty):
     assert moves == [(1, 3), (1, 5), (2, 2), (2, 6), (4, 2), (4, 6), (5, 5), (5, 3)]
 
 
-def test_get_valid_peaceful_moves_some_moves(mock_game_state_half):
-    mock_game_state_half.board[3][4] = -9
-    knight = Piece.Knight("white_k",0,0,Player.PLAYER_1)
-    mock_game_state_half.board[0][0]= knight
-    moves = knight.get_valid_peaceful_moves(mock_game_state_half)
+# knight is in the corner ,and one legal cell contains a pawn
+def test_get_valid_peaceful_moves_corner(mock_game_state_empty):
+    gs = mock_game_state_empty
+    gs.board[3][4] = -9
+    knight = Piece.Knight("white_k", 0, 0, Player.PLAYER_1)
+    gs.board[0][0] = knight
+    gs.board[1][2] = Piece.Pawn('black_p', 1, 2, Player.PLAYER_2)
+    moves = knight.get_valid_peaceful_moves(gs)
     # Assert that the moves are correct
-    assert moves == [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, 1), (2, -1)]
+    assert moves == [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (2, 1), (2, -1)]
 
 
 def test_get_valid_peaceful_moves_no_moves(mock_game_state_full):
     knight = mock_game_state_full.board[3][4]
     moves = knight.get_valid_peaceful_moves(mock_game_state_full)
+    # Assert that the moves are correct
+    assert moves == []
+
+
+def test_get_valid_piece_takes_all_moves(mock_game_state_full):
+    knight = mock_game_state_full.board[3][4]
+    moves = knight.get_valid_piece_takes(mock_game_state_full)
+    # Assert that the moves are correct
+    assert moves == [(1, 3), (1, 5), (2, 2), (2, 6), (4, 2), (4, 6), (5, 5), (5, 3)]
+
+
+def test_get_valid_piece_takes_own_pieces(mock_game_state_full):
+    gs = mock_game_state_full
+    knight = gs.board[3][4]
+    gs.board[1][3]=-9
+    gs.board[1][3]= Piece.Pawn("white_p",1,3,Player.PLAYER_1)
+    gs.board[2][6] = -9
+    gs.board[2][6] = Piece.Pawn("white_p", 1, 3, Player.PLAYER_1)
+    moves = knight.get_valid_piece_takes(gs)
+    # Assert that the moves are correct
+    assert moves == [(1, 5), (2, 2), (4, 2), (4, 6), (5, 5), (5, 3)]
+
+
+def test_get_valid_piece_takes_no_moves(mock_game_state_empty):
+    knight = mock_game_state_empty.board[3][4]
+    moves = knight.get_valid_piece_takes(mock_game_state_empty)
     # Assert that the moves are correct
     assert moves == []
