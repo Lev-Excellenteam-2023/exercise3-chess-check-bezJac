@@ -16,7 +16,7 @@ def mock_game_state_empty():
     def get_piece(row, col):
         return mock_gs.board[row][col]
 
-    def is_valid_piece(row,col):
+    def is_valid_piece(row, col):
         evaluated_piece = get_piece(row, col)
         return (evaluated_piece is not None) and (evaluated_piece != Player.EMPTY)
 
@@ -69,8 +69,8 @@ def test_get_valid_piece_takes_all_moves(mock_game_state_full):
 def test_get_valid_piece_takes_own_pieces(mock_game_state_full):
     gs = mock_game_state_full
     knight = gs.board[3][4]
-    gs.board[1][3]=-9
-    gs.board[1][3]= Piece.Pawn("white_p",1,3,Player.PLAYER_1)
+    gs.board[1][3] = -9
+    gs.board[1][3] = Piece.Pawn("white_p", 1, 3, Player.PLAYER_1)
     gs.board[2][6] = -9
     gs.board[2][6] = Piece.Pawn("white_p", 1, 3, Player.PLAYER_1)
     moves = knight.get_valid_piece_takes(gs)
@@ -83,3 +83,13 @@ def test_get_valid_piece_takes_no_moves(mock_game_state_empty):
     moves = knight.get_valid_piece_takes(mock_game_state_empty)
     # Assert that the moves are correct
     assert moves == []
+
+
+def test_integration_get_valid_piece_moves(mock_game_state_empty):
+    gs = mock_game_state_empty
+    knight = gs.board[3][4]
+    gs.board[1][3] = Piece.Pawn("black_p", 1, 3, Player.PLAYER_2)
+    gs.board[2][6] = Piece.Pawn("black_p", 1, 3, Player.PLAYER_2)
+    gs.board[4][2] = Piece.Pawn("white_p", 1, 3, Player.PLAYER_1)
+    moves = knight.get_valid_piece_moves(gs)
+    assert moves == [(1, 5), (2, 2), (4, 6), (5, 5), (5, 3), (1, 3), (2, 6) ]
